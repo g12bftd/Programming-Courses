@@ -1,0 +1,72 @@
+---
+title: "Section 1 - Data Pre-processing"
+output: html_notebook
+author: Glenn Bucagu
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 1 - Data Preprocessing/Section 2 -------------------- Part 1 - Data Preprocessing --------------------/R")
+```
+
+
+```{r importing the dataset}
+dataset <- read.csv('Data.csv')
+head(dataset)
+summary(dataset)
+
+```
+
+```{r filtering missing data}
+
+# 2 options to handle missing data:
+# remove the entire row (not viable if there are many missing values)
+# for continous data, add the mean of the column
+# for categorical data, add the mode of the column
+
+# we will add the mean of the "Age" column
+# na.rm = TRUE means exclude missing values from calculations 
+dataset$Age = ifelse(is.na(dataset$Age), ave(dataset$Age, FUN = function(x) mean(x, na.rm = TRUE)), dataset$Age)
+dataset$Salary = ifelse(is.na(dataset$Salary), ave(dataset$Salary, FUN = function(x) mean(x, na.rm = TRUE)), dataset$Salary)
+
+dataset
+```
+
+```{r encoding categorical data}
+# Encoding the country column
+dataset$Country = factor(x=dataset$Country, levels=c('France', 'Spain', 'Germany'), labels=c(1, 2, 3))
+
+# Encoding the purchased column
+dataset$Purchased = factor(x=dataset$Purchased, levels=c('No', 'Yes'), labels=c(0, 1))
+
+dataset
+```
+
+
+```{r splitting the dataset into training and testing set}
+# Install CaTools package
+# install.packages("caTools")
+# library(caTools)
+
+set.seed(123)
+# split will return True if observation is in training set, and false otherwise
+split = sample.split(Y = dataset$Purchased, SplitRatio = 0.8)
+training_set = subset(dataset, split == TRUE)
+testing_set = subset(dataset, split == FALSE)
+
+training_set
+testing_set
+```
+
+
+```{r feature scaling}
+# We apply unity-based normalization to the training and testing set
+# we will only scale continuous values
+
+training_set[2:3] = scale(training_set[2:3])
+testing_set[2:3] = scale(testing_set[2:3])
+
+training_set
+testing_set
+
+```
+

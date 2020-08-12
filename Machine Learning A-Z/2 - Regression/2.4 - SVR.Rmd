@@ -1,0 +1,48 @@
+---
+title: "Section 2.4 - Support Vector Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 7 - Support Vector Regression (SVR)/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("Position_Salaries.csv")
+dataset <- dataset[2:3]
+dataset
+```
+
+```{r fitting the SVM model}
+# installing e1071 package for support vector regression
+# install.packages("e1071")
+library(e1071)
+
+regressor <- svm(formula = Salary ~ ., data = dataset, 
+                 type = "eps-regression")
+summary(regressor)
+```
+
+
+```{r predicting a single new observation}
+y_pred <- predict(regressor, data.frame(Level = 6.5))
+y_pred # $177,861.10
+
+```
+
+
+```{r visualizing SVR results}
+
+library(ggplot2)
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = dataset$Level, y = predict(regressor, newdata = dataset))) + 
+  xlab("Employment Level") + 
+  ylab("Annual Salary ($)") +
+  ggtitle("Annual Salary vs. Employment Level (SVR)")
+
+```
+

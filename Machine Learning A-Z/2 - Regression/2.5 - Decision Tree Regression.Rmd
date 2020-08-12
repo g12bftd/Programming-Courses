@@ -1,0 +1,106 @@
+---
+title: "Section 2.5 - Decision Tree Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 8 - Decision Tree Regression/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("Position_Salaries.csv")
+dataset <- dataset[2:3]
+dataset
+```
+
+```{r fitting the decision tree regression model}
+# installing rpart package for decision tree regression
+# install.packages("rpart")
+library(rpart)
+
+regressor <- rpart(formula = Salary ~ ., data = dataset)
+summary(regressor)
+```
+
+
+```{r predicting a single new observation}
+y_pred <- predict(regressor, data.frame(Level = 6.5))
+y_pred #249500
+
+```
+
+
+```{r visualizing regression results}
+library(ggplot2)
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = dataset$Level, y = predict(regressor, newdata = dataset)), 
+             colour = "blue") +
+  xlab("Employment Level") + 
+  ylab("Annual Salary ($)") + 
+  ggtitle("Annual Salary vs. Employment Level")
+
+# We see a straight horizontal line 
+# This is because we have used the simplest single split
+# decision tree model.
+
+```
+```{r strengthening our model}
+
+# we strengthen our model to have a minimum of 1 split
+regressor_2 <- rpart(formula = Salary ~ ., data = dataset, 
+                     control = rpart.control(minsplit = 1))
+summary(regressor_2)
+```
+
+```{r regressor_2 - predicting a single new observation}
+y_pred <- predict(regressor_2, data.frame(Level = 6.5))
+y_pred #250000 
+
+```
+
+
+```{r visualizing regressor_2 results}
+library(ggplot2)
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = dataset$Level, y = predict(regressor_2, newdata = dataset)), 
+             colour = "blue") +
+  xlab("Employment Level") + 
+  ylab("Annual Salary ($)") + 
+  ggtitle("Annual Salary vs. Employment Level")
+
+# We obtain a series of straight line segments for 4 intervals
+# Recall that the decision tree algorithm predicts the average output value in each leaf
+# Judging from our visualization, there must be a problem
+# In reality, our "Employment Level" is a discrete feature so we must consider a discrete version of our plot
+# We must visualize our results in higher resolution
+
+```
+
+
+```{r visualizing regressor_2 results in higher resolution}
+library(ggplot2)
+
+x_grid = seq(min(dataset$Level), max(dataset$Level), 0.01)
+
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = x_grid, y = predict(regressor_2, newdata = data.frame(Level = x_grid))), 
+             colour = "blue") +
+  xlab("Employment Level") + 
+  ylab("Annual Salary ($)") + 
+  ggtitle("Annual Salary vs. Employment Level")
+
+# This visualization makes more sense in the context of our
+# problem
+
+```
+
+
+

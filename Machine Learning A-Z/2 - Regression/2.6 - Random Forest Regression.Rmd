@@ -1,0 +1,50 @@
+---
+title: "Section 2.6 - Random Forest Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 9 - Random Forest Regression/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("Position_Salaries.csv")
+dataset <- dataset[2:3]
+dataset
+```
+
+```{r fitting the random forest regression model}
+# installing randomForest package for random forest regression
+# install.packages("randomForest")
+library(randomForest)
+# Note: dataset[column #] produces a data frame, dataset$column gives a vector
+set.seed(1234)
+regressor <- randomForest(x = dataset[1], y = dataset$Salary, ntree = 10^3)
+summary(regressor)
+```
+
+```{r predicting a single new observation}
+
+y_pred <- predict(regressor, data.frame(Level = 6.5))
+y_pred #159894.2
+
+```
+
+
+
+```{r visualizing model results in high resolution}
+library(ggplot2)
+x_grid <- seq(min(dataset$Level), max(dataset$Level), 0.01)
+ggplot() +
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") + 
+  geom_line(aes(x = x_grid, y = predict(regressor, newdata = data.frame(Level = x_grid))), colour = "blue") + 
+  xlab("Employment Level") + 
+  ylab("Annual Salary ($)") + 
+  ggtitle("Annual Salary vs. Employment Level (RFR)")
+
+
+```
+

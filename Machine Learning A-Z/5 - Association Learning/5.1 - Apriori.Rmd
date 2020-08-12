@@ -1,0 +1,63 @@
+---
+title: "5.1 - Apriori"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 5 - Association Rule Learning/Section 28 - Apriori/R")
+```
+
+
+```{r importing dataset}
+dataset <- read.csv("Market_Basket_Optimisation.csv",
+                    header = FALSE) 
+
+```
+
+```{r building the apriori model}
+#install.packages("arules")
+library(arules)
+dataset <- read.transactions("Market_Basket_Optimisation.csv",
+                             sep = ",",
+                             rm.duplicates = TRUE #remove duplicates
+                             )
+summary(dataset)
+itemFrequencyPlot(dataset, topN = 50)
+                             
+
+```
+
+```{r training the apriori model on the dataset}
+# to decide on minimum support:
+# we want the minimum number of daily transactions to be 4 times/day
+# hence the product is purchased about 28 times/week
+# total number of observations in dataset = 7500
+# so our minimum support will be 21/7500 = 0.00373...
+
+# to decide on minimum confidence:
+# we will start with a default value of 0.8
+# tune the confidence parameter until we are satisfied with our rules
+# we see confidence of 0.8 is too high
+# taking 0.4, we obtain 281 rules
+# some of our rules have no causal property
+# we reduce the confidence to 0.2 to address this issue
+# this yields 1348 rules
+# increasing the support to 0.004, we obtain 811 rules
+
+
+rules <- apriori(data = dataset,
+                 parameter = list(support = 0.004, confidence = 0.2),
+                 )
+
+
+```
+
+```{r visualizing results}
+# As per Apriori algorithm, we need to sort the rules by decreasing lift
+# we look at the top 10 rules
+inspect(sort(rules, by = "lift")[1:10])
+
+```
+

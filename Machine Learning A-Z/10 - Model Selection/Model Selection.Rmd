@@ -1,0 +1,97 @@
+---
+title: "10 - K-fold Cross Validation & Grid Search"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+Kernel PCA is ideal for non-linearly separable classification problems.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 9 - Dimensionality Reduction/Section 45 - Kernel PCA/R")
+```
+
+```{r importing the dataset}
+dataset <- read.csv("Social_Network_Ads.csv")[3:5]
+dataset
+```
+
+```{r splitting the dataset into training and testing set}
+library(caTools)
+split <- sample.split(dataset$Purchased, SplitRatio = 0.8)
+training_set <- subset(dataset, split == TRUE)
+test_set <- subset(dataset, split == FALSE)
+
+training_set
+test_set
+
+```
+
+```{r feature scaling}
+training_set[-3] <- scale(training_set[-3])
+test_set[-3] <- scale(test_set[-3])
+
+training_set
+test_set
+```
+
+
+```{r applying Kernel PCA to the dataset}
+#install.packages("kernlab")
+library(kernlab)
+kpca <- kpca(~.,
+             data = training_set[-3],
+             kernel = "rbfdot",
+             features = 2)
+
+training_set_pca <- as.data.frame(predict(kpca, training_set))
+training_set_pca$Purchased <- training_set$Purchased
+
+
+test_set_pca <- as.data.frame(predict(kpca, test_set))
+test_set_pca$Purchased <- test_set$Purchased
+training_set_pca
+test_set_pca
+
+
+
+
+
+```
+
+
+```{r implementing k-fold cross validation}
+library(caret)
+library(e1071)
+# we will implement 10-fold cross-validation
+folds <- createFolds(y = training_set$Purchased,
+                     k = 10)
+cv <- lapply(folds, 
+             function(x) {
+               training_fold = training_set[-x, ]
+               test_fold = training_set[x, ]
+               classifier = svm(formula = Purchased ~ .,
+                                data = training_fold,
+                                type = "C-classification",
+                                kernel = "radial")
+               y_pred <- predict(classifier, 
+                                 newdata = test_fold[-3],
+                                 type = "class")
+               cm <- table(test_fold[, 3], y_pred)
+               accuracy <- (sum(diag(cm))) / (sum(cm))
+               return(accuracy)
+             })
+
+cv
+```
+
+
+```{r applying grid search to tune hyperparameters}
+library(caret)
+classifier <- train(form = Purchased ~ .,
+                    data = training_set,
+                    method = "svmRadial")
+classifier$bestTune
+
+```
+

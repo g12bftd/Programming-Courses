@@ -1,0 +1,83 @@
+---
+title: "7 - Natural Language Processing"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 7 - Natural Language Processing/Section 36 - Natural Language Processing/R")
+```
+
+```{r importing the dataset}
+dataset <- read.delim("Restaurant_Reviews.tsv", 
+                    quote = '',
+                    stringsAsFactors = FALSE)
+dataset
+
+```
+
+```{r Cleaning the text}
+#install.packages("tm")
+#install.packages("SnowballC")
+library(tm)
+library(NLP)
+library(SnowballC)
+corpus <- VCorpus(VectorSource(dataset$Review))
+corpus <- tm_map(corpus, content_transformer(tolower)) # lowercase
+corpus <- tm_map(corpus, removeNumbers) # numbers
+corpus <- tm_map(corpus, removePunctuation) # punctuation
+corpus <- tm_map(corpus, removeWords, stopwords()) # stopwords
+corpus <- tm_map(corpus, stemDocument) # only root of words
+corpus <- tm_map(corpus, stripWhitespace) # remove white space
+
+# To visualize a sample of the corpus
+as.character(corpus[[1]])
+as.character(corpus[[2]])
+as.character(corpus[[841]])
+
+```
+
+```{r building our Bag of Words model}
+dtm = DocumentTermMatrix(corpus)
+
+# Filter words that do not appear frequently
+# Only keep the 99% most frequent words
+dtm <- removeSparseTerms(dtm, 0.999)
+dtm
+```
+
+
+```{r building a random forest classification model}
+dataset_original <- read.delim("Restaurant_Reviews.tsv", 
+                    quote = '',
+                    stringsAsFactors = FALSE)
+text_dataset <- as.data.frame(as.matrix(dtm))
+text_dataset$Liked <- dataset_original$Liked
+
+# transforming the target feature into a factor
+text_dataset$Liked <- factor(text_dataset$Liked, levels = c(0, 1))
+
+# Splitting dataset into training and testing set
+library(caTools)
+set.seed(123)
+split <- sample.split(text_dataset$Liked, SplitRatio = 0.8)
+training_set <- subset(text_dataset, split == TRUE)
+test_set <- subset(text_dataset, split == FALSE)
+
+# Training the random forest model
+library(randomForest)
+classifier <- randomForest(x = training_set[-692],
+                           y = training_set$Liked,
+                           ntree = 10)
+```
+
+
+```{r predicting results in the test dat}
+y_pred <- predict(classifier, newdata = test_set[-692])
+
+# Generating a confusion matrix
+confusion_matrix <- table(test_set[, 692], y_pred)
+confusion_matrix
+```
+

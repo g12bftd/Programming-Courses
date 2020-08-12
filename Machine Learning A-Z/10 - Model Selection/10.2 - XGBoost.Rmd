@@ -1,0 +1,78 @@
+---
+title: "10.2 - XGBoost"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+XGBoost is arguable the most powerful implementation of gradient boosting.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 10 - Model Selection _ Boosting/Section 49 - XGBoost/R")
+```
+
+```{r importing the dataset}
+dataset <- read.csv("Churn_Modelling.csv")[4:14]
+dataset
+```
+
+
+```{r pre-processing}
+# Encoding categorical variables as factors
+
+dataset$Geography <- as.numeric(factor(dataset$Geography, 
+                            levels = c("France", "Spain", "Germany"),
+                            labels = c(1, 2, 3)))
+dataset$Gender <- as.numeric(factor(dataset$Gender,
+                         levels = c("Female", "Male")))
+
+dataset
+```
+
+
+```{r splitting the dataset into training and testing set}
+library(caTools)
+set.seed(123)
+split = sample.split(dataset$Exited, SplitRatio = 0.8)
+training_set <- subset(dataset, split == TRUE)
+test_set <- subset(dataset, split == FALSE)
+training_set
+test_set
+
+```
+
+
+```{r fitting XGBoost model}
+# install.packages("xgboost")
+library(xgboost)
+classifier <- xgboost(data = as.matrix(training_set[-11]),
+                      label = training_set$Exited,
+                      nrounds = 10 # maximum number of iterations to run XGBoost
+                      )
+
+```
+
+```{r implementing k-fold cross validation}
+library(caret)
+library(MASS)
+folds <- createFolds(training_set$Exited, 
+                     k = 10)
+cv <- lapply(folds,
+             function(x) {
+               training_fold <- training_set[-x, ]
+               test_fold <- training_set[x, ]
+               classifier <- xgboost(data = as.matrix(training_set[-11]),
+                      label = training_set$Exited,
+                      nrounds = 10 # maximum number of iterations to run XGBoost
+                      )
+               y_pred <- predict(classifier, newdata = as.matrix(test_fold[-11]))
+               y_pred <- (y_pred >= 0.5)
+               cm <- table(test_fold[, 11], y_pred)
+               accuracy = (sum(diag(cm))) / sum(cm)
+               return(accuracy)
+               
+             })
+cv
+
+```
+

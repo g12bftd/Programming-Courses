@@ -1,0 +1,82 @@
+---
+title: "Section 2.1 - Simple Linear Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 4 - Simple Linear Regression/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("Salary_Data.csv")
+dataset
+```
+```{r missing data}
+
+dataset$YearsExperience = ifelse(is.na(dataset$YearsExperience), ave(dataset$YearsExperience, FUN = function(x) mean(x, na.rm = TRUE)), dataset$YearsExperience)
+
+dataset$Salary = ifelse(is.na(dataset$Salary), ave(dataset$Salary, FUN = function(x) mean(x, na.rm = TRUE)), dataset$Salary)
+
+dataset
+
+```
+
+
+```{r splitting the dataset into training and testing set}
+
+set.seed(123)
+# split will return True if observation is in training set, and false otherwise
+library(caTools)
+split = sample.split(Y = dataset$Salary, SplitRatio = 2/3)
+training_set = subset(dataset, split == TRUE)
+testing_set = subset(dataset, split == FALSE)
+
+training_set
+testing_set
+```
+
+```{r fitting the simple linear regression}
+
+regressor = lm(formula = Salary ~ YearsExperience, data = training_set)
+summary(regressor) # coefficients, t vals, p-vals etc.
+```
+
+
+```{r make predictions on testing set}
+
+y_pred <- predict(regressor, newdata = testing_set)
+y_pred
+```
+
+
+```{r visualize training set results}
+library(ggplot2)
+# We produce a scatter plot of our training set
+# Line of best fit will be the model's prediction of the training set
+
+ggplot() +
+  geom_point(aes(x=training_set$YearsExperience, y=training_set$Salary), 
+             colour = "red") + 
+  geom_line(aes(x=training_set$YearsExperience, y=predict(regressor, newdata = training_set)), 
+            colour = "black") + 
+  ggtitle('Annual Salary vs. Years of Experience (Training Set)') +
+  xlab('Years of Experience') +
+  ylab('Annual Salary ($)')
+```
+
+```{r visualize testing set results}
+library(ggplot2)
+# We produce a scatter plot of our training set
+# Line of best fit will be the model's prediction of the training set
+
+ggplot() +
+  geom_point(aes(x=testing_set$YearsExperience, y=testing_set$Salary), 
+             colour = "red") + 
+  geom_line(aes(x=training_set$YearsExperience, y=predict(regressor, newdata = training_set)), 
+            colour = "black") + 
+  ggtitle('Annual Salary vs. Years of Experience (Testing Set)') +
+  xlab('Years of Experience') +
+  ylab('Annual Salary ($)')
+```

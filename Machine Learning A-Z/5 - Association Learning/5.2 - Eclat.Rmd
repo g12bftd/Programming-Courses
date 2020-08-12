@@ -1,0 +1,39 @@
+---
+title: "5.2 - Eclat"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 5 - Association Rule Learning/Section 29 - Eclat/R")
+```
+
+
+```{r importing dataset}
+dataset <- read.csv("Market_Basket_Optimisation.csv",
+                    header = FALSE) 
+
+```
+
+```{r}
+dataset <- read.transactions("Market_Basket_Optimisation.csv",
+                             sep = ",",
+                             rm.duplicates = TRUE)
+summary(dataset)
+itemFrequencyPlot(dataset, topN = 30)
+```
+
+```{r training the Eclat model on the dataset}
+rules = eclat(data = dataset,
+              parameter = list(support = 0.004, minlen = 2))
+
+```
+
+```{r visualizing our rules}
+# As per the Eclat algorithm, we sort our rules by decreasing
+# support
+inspect(sort(rules, by = "support")[1:10])
+
+```
+

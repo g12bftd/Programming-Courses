@@ -1,0 +1,75 @@
+---
+title: "Section 2.3 - Polynomial Linear Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 6 - Polynomial Regression/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("Position_Salaries.csv")
+dataset <- dataset[2:3]
+dataset
+```
+
+
+```{r splitting the dataset into training and testing set}
+
+set.seed(123)
+# split will return True if observation is in training set, and false otherwise
+library(caTools)
+
+# Add square, cube and quartic power of the Level feature to the dataset
+dataset$Level2 <- (dataset$Level)^2
+dataset$Level3 <- (dataset$Level)^3
+dataset$Level4 <- (dataset$Level)^4
+
+split = sample.split(dataset$Salary, SplitRatio = 0.8)
+training_set = subset(dataset, split == TRUE)
+testing_set = subset(dataset, split == FALSE)
+
+training_set
+testing_set
+
+```
+
+
+```{r fitting the polynomial linear regression}
+lin_reg <- lm(Salary ~ Level, data = training_set)
+
+poly_reg <- lm(Salary ~ ., data = training_set)
+
+summary(lin_reg)
+summary(poly_reg)
+
+```
+
+```{r visualizing linear regression results}
+
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = dataset$Level, y = predict(lin_reg, newdata = dataset)), 
+             colour = "blue") + 
+  ylab("Annual Salary ($)") + 
+  xlab("Employment Level") +
+  ggtitle("Annual Salary vs. Employment Level")
+
+```
+
+```{r visualizing polynomial regression results}
+
+ggplot() + 
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), 
+             colour = "red") +
+  geom_line(aes(x = dataset$Level, y = predict(poly_reg, newdata = dataset)), 
+             colour = "blue") + 
+  ylab("Annual Salary ($)") + 
+  xlab("Employment Level") +
+  ggtitle("Annual Salary vs. Employment Level")
+
+```
+

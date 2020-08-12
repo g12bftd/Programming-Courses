@@ -1,0 +1,69 @@
+---
+title: "Section 2.2 - Multiple Linear Regression"
+output: html_notebook
+author: Glenn Bucagu
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "~/Desktop/Projects/Machine Learning A-Z (Codes and Datasets)/Part 2 - Regression/Section 5 - Multiple Linear Regression/R")
+```
+
+```{r importing dataset}
+dataset <- read.csv("50_Startups.csv")
+dataset
+summary(dataset)
+```
+
+```{r encoding categorical data}
+
+dataset$State = factor(x=dataset$State, levels=c('New York', 'California', 'Florida'), labels=c(1, 2, 3))
+dataset
+
+```
+
+
+
+
+```{r splitting the dataset into training and testing set}
+
+set.seed(123)
+# split will return True if observation is in training set, and false otherwise
+library(caTools)
+split = sample.split(dataset$Profit, SplitRatio = 0.8)
+training_set = subset(dataset, split == TRUE)
+testing_set = subset(dataset, split == FALSE)
+
+training_set
+testing_set
+
+```
+
+```{r fitting the multiple linear regression}
+regressor = lm(Profit ~ ., data=training_set)
+summary(regressor)
+
+```
+
+
+```{r make predictions on testing set}
+y_pred = predict(regressor, newdata = testing_set)
+y_pred
+
+```
+
+
+```{r Building the optimal model using Backward Elimination}
+
+min_model <- lm(Profit ~ 1, data=training_set) # only an intercept
+df.penalty <- 2 # hyperparameter recommended by R documentation
+backward_m <- step(object = regressor,
+scope = list(lower = min_model, upper = regressor), direction = "backward", trace = FALSE, k = df.penalty)
+summary(backward_m)
+
+```
+
+```{r Building the optimal model using Forward Elimination}
+
+
+```
