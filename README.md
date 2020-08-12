@@ -2,11 +2,11 @@
 
 A few programming courses I undertook on my data science journey.
 
-### 1) Python A-Z
+### 1) Python A-Z: Python for Data Science with Real-World Exercises
 Programming In Python For Data Analytics And Data Science. Learn Statistical Analysis, Data Mining And Visualization
 
 
-### 2) Machine Learning A-Z
+### 2) Machine Learning A-Z: Hands-on Python & R in Data Science
 A course on implementing common machine learning algorithms in the fields of :
 - Regression
 - Classification
